@@ -97,8 +97,7 @@ QJsonObject ConfigSerializer::serializeOutput(const OutputPtr &output)
     if (output->capabilities() & Output::Capability::Overscan) {
         obj[QLatin1String("overscan")] = static_cast<int>(output->overscan());
     }
-    {
-        const QRect pan = output->panning();
+    if (const QRect pan = output->panning(); pan.isValid()) {
         QJsonObject panObj;
         panObj[QLatin1String("x")] = pan.x();
         panObj[QLatin1String("y")] = pan.y();
@@ -161,7 +160,9 @@ QJsonObject ConfigSerializer::serializeScreen(const ScreenPtr &screen)
 
     obj[QLatin1String("id")] = screen->id();
     obj[QLatin1String("currentSize")] = serializeSize(screen->currentSize());
-    obj[QLatin1String("explicitSize")] = serializeSize(screen->explicitSize());
+    if (screen->explicitSize().isValid()) {
+        obj[QLatin1String("explicitSize")] = serializeSize(screen->explicitSize());
+    }
     obj[QLatin1String("maxSize")] = serializeSize(screen->maxSize());
     obj[QLatin1String("minSize")] = serializeSize(screen->minSize());
     obj[QLatin1String("maxActiveOutputsCount")] = screen->maxActiveOutputsCount();

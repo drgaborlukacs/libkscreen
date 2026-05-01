@@ -122,6 +122,10 @@ void XRandRConfig::applyKScreenConfig(const KScreen::ConfigPtr &config)
 
     const KScreen::OutputList kscreenOutputs = config->outputs();
 
+    if (config->screen()) {
+        m_screen->setExplicitSize(config->screen()->explicitSize());
+    }
+
     const QSize newScreenSize = screenSize(config);
     const QSize currentScreenSize = m_screen->currentSize();
 

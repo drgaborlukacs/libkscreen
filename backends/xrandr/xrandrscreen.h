@@ -32,9 +32,13 @@ public:
     void update(const QSize &size);
     QSize currentSize();
 
+    void setExplicitSize(const QSize &size);
+    QSize explicitSize() const;
+
 private:
     int m_id;
     QSize m_minSize;
     QSize m_maxSize;
     QSize m_currentSize;
+    QSize m_explicitSize;
 };

@@ -46,6 +46,16 @@ QSize XRandRScreen::currentSize()
     return m_currentSize;
 }
 
+void XRandRScreen::setExplicitSize(const QSize &size)
+{
+    m_explicitSize = size;
+}
+
+QSize XRandRScreen::explicitSize() const
+{
+    return m_explicitSize;
+}
+
 KScreen::ScreenPtr XRandRScreen::toKScreenScreen() const
 {
     KScreen::ScreenPtr kscreenScreen(new KScreen::Screen);
@@ -53,6 +63,7 @@ KScreen::ScreenPtr XRandRScreen::toKScreenScreen() const
     kscreenScreen->setMaxSize(m_maxSize);
     kscreenScreen->setMinSize(m_minSize);
     kscreenScreen->setCurrentSize(m_currentSize);
+    kscreenScreen->setExplicitSize(m_explicitSize);
 
     XCB::ScopedPointer<xcb_randr_get_screen_resources_reply_t> screenResources(XRandR::screenResources());
     kscreenScreen->setMaxActiveOutputsCount(screenResources->num_crtcs);
@@ -63,6 +74,7 @@ KScreen::ScreenPtr XRandRScreen::toKScreenScreen() const
 void XRandRScreen::updateKScreenScreen(KScreen::ScreenPtr &screen) const
 {
     screen->setCurrentSize(m_currentSize);
+    screen->setExplicitSize(m_explicitSize);
 }
 
 #include "moc_xrandrscreen.cpp"
