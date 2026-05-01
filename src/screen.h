@@ -22,6 +22,7 @@ public:
     Q_PROPERTY(int id READ id CONSTANT)
     Q_PROPERTY(QSize currentSize READ currentSize WRITE setCurrentSize NOTIFY currentSizeChanged)
     Q_PROPERTY(QSize minSize READ minSize CONSTANT)
+    Q_PROPERTY(QSize explicitSize READ explicitSize WRITE setExplicitSize NOTIFY explicitSizeChanged)
     Q_PROPERTY(QSize maxSize READ maxSize CONSTANT)
     Q_PROPERTY(int maxActiveOutputsCount READ maxActiveOutputsCount CONSTANT)
 
@@ -56,6 +57,9 @@ public:
      * The minimum screen size in pixels.
      * @return Minimum screen size in pixels
      */
+    QSize explicitSize() const;
+    void setExplicitSize(const QSize &explicitSize);
+
     QSize minSize() const;
     /**
      * Set the minimum screen size in pixels.
@@ -81,6 +85,7 @@ public:
 
 Q_SIGNALS:
     void currentSizeChanged();
+    void explicitSizeChanged();
 
 private:
     Q_DISABLE_COPY(Screen)

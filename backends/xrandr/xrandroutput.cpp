@@ -88,6 +88,19 @@ QSize XRandROutput::size() const
     return m_crtc ? m_crtc->geometry().size() : QSize();
 }
 
+QRect XRandROutput::panning() const
+{
+    if (!m_crtc) {
+        return QRect();
+    }
+    auto cookie = xcb_randr_get_panning(XCB::connection(), m_crtc->crtc());
+    XCB::ScopedPointer<xcb_randr_get_panning_reply_t> reply(xcb_randr_get_panning_reply(XCB::connection(), cookie, nullptr));
+    if (!reply || reply->width == 0 || reply->height == 0) {
+        return QRect();
+    }
+    return QRect(reply->left, reply->top, reply->width, reply->height);
+}
+
 XRandRMode::Map XRandROutput::modes() const
 {
     return m_modes;
@@ -488,6 +501,7 @@ KScreen::OutputPtr XRandROutput::toKScreenOutput() const
             kscreenOutput->setPos(position());
             kscreenOutput->setRotation(rotation());
             kscreenOutput->setCurrentModeId(currentModeId());
+            kscreenOutput->setPanning(panning());
         }
         // TODO: set logical size?
     }

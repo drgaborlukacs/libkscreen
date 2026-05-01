@@ -62,6 +62,7 @@ public:
         , explicitLogicalSize(other.explicitLogicalSize)
         , capabilities(other.capabilities)
         , overscan(other.overscan)
+        , panning(other.panning)
         , vrrPolicy(other.vrrPolicy)
         , rgbRange(other.rgbRange)
         , highDynamicRange(other.highDynamicRange)
@@ -130,6 +131,7 @@ public:
     QSizeF explicitLogicalSize;
     Capabilities capabilities;
     uint32_t overscan = 0;
+    QRect panning;
     VrrPolicy vrrPolicy = VrrPolicy::Automatic;
     RgbRange rgbRange = RgbRange::Automatic;
     bool highDynamicRange = false;
@@ -716,6 +718,20 @@ void Output::setOverscan(uint32_t overscan)
     Q_EMIT overscanChanged();
 }
 
+QRect Output::panning() const
+{
+    return d->panning;
+}
+
+void Output::setPanning(const QRect &panning)
+{
+    if (d->panning == panning) {
+        return;
+    }
+    d->panning = panning;
+    Q_EMIT panningChanged();
+}
+
 Output::VrrPolicy Output::vrrPolicy() const
 {
     return d->vrrPolicy;
@@ -1149,6 +1165,10 @@ void Output::apply(const OutputPtr &other)
     if (d->overscan != other->d->overscan) {
         changes << &Output::overscanChanged;
         setOverscan(other->d->overscan);
+    }
+    if (d->panning != other->d->panning) {
+        changes << &Output::panningChanged;
+        setPanning(other->d->panning);
     }
     if (d->rgbRange != other->d->rgbRange) {
         changes << &Output::rgbRangeChanged;

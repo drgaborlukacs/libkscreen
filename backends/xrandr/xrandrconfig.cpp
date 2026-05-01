@@ -195,6 +195,12 @@ void XRandRConfig::applyKScreenConfig(const KScreen::ConfigPtr &config)
             }
         }
 
+        if (kscreenOutput->panning() != currentOutput->panning()) {
+            if (!toChange.contains(outputId)) {
+                toChange.insert(outputId, kscreenOutput);
+            }
+        }
+
         XRandRMode *currentMode = currentOutput->modes().value(kscreenOutput->currentModeId().toInt());
         // For some reason, in some environments currentMode is null
         // which doesn't make sense because it is the *current* mode...
@@ -424,6 +430,12 @@ void XRandRConfig::printInternalCond() const
 
 QSize XRandRConfig::screenSize(const KScreen::ConfigPtr &config) const
 {
+    if (config->screen() && config->screen()->explicitSize().isValid()) {
+        const QSize explicitSize = config->screen()->explicitSize();
+        qCDebug(KSCREEN_XRANDR) << "Using explicit screen size" << explicitSize;
+        return explicitSize;
+    }
+
     QRect rect;
     for (const KScreen::OutputPtr &output : config->outputs()) {
         if (!output->isConnected() || !output->isEnabled()) {
@@ -438,6 +450,9 @@ QSize XRandRConfig::screenSize(const KScreen::ConfigPtr &config) const
 
         const QRect outputGeom = output->geometry();
         rect = rect.united(outputGeom);
+        if (output->panning().isValid()) {
+            rect = rect.united(output->panning());
+        }
     }
 
     const QSize size = QSize(rect.width(), rect.height());
@@ -622,6 +637,26 @@ bool XRandRConfig::sendConfig(const KScreen::OutputPtr &kscreenOutput, XRandRCrt
     }
 
     crtc->updateTimestamp(reply->timestamp);
+
+    if (reply->status == XCB_RANDR_SET_CONFIG_SUCCESS) {
+        const QRect pan = kscreenOutput->panning();
+        auto panCookie = xcb_randr_set_panning(XCB::connection(),
+                                               crtc->crtc(),
+                                               XCB_CURRENT_TIME,
+                                               pan.x(),
+                                               pan.y(),
+                                               pan.width(),
+                                               pan.height(),
+                                               pan.x(),
+                                               pan.y(),
+                                               pan.width(),
+                                               pan.height(),
+                                               0,
+                                               0,
+                                               0,
+                                               0);
+        XCB::ScopedPointer<xcb_randr_set_panning_reply_t> panReply(xcb_randr_set_panning_reply(XCB::connection(), panCookie, nullptr));
+    }
 
     qCDebug(KSCREEN_XRANDR) << "\tResult: " << reply->status << " timestamp: " << reply->timestamp;
     return (reply->status == XCB_RANDR_SET_CONFIG_SUCCESS);

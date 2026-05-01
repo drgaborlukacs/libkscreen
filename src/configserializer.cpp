@@ -97,6 +97,15 @@ QJsonObject ConfigSerializer::serializeOutput(const OutputPtr &output)
     if (output->capabilities() & Output::Capability::Overscan) {
         obj[QLatin1String("overscan")] = static_cast<int>(output->overscan());
     }
+    {
+        const QRect pan = output->panning();
+        QJsonObject panObj;
+        panObj[QLatin1String("x")] = pan.x();
+        panObj[QLatin1String("y")] = pan.y();
+        panObj[QLatin1String("width")] = pan.width();
+        panObj[QLatin1String("height")] = pan.height();
+        obj[QLatin1String("panning")] = panObj;
+    }
     if (output->capabilities() & Output::Capability::Vrr) {
         obj[QLatin1String("vrrPolicy")] = static_cast<int>(output->vrrPolicy());
     }
@@ -152,6 +161,7 @@ QJsonObject ConfigSerializer::serializeScreen(const ScreenPtr &screen)
 
     obj[QLatin1String("id")] = screen->id();
     obj[QLatin1String("currentSize")] = serializeSize(screen->currentSize());
+    obj[QLatin1String("explicitSize")] = serializeSize(screen->explicitSize());
     obj[QLatin1String("maxSize")] = serializeSize(screen->maxSize());
     obj[QLatin1String("minSize")] = serializeSize(screen->minSize());
     obj[QLatin1String("maxActiveOutputsCount")] = screen->maxActiveOutputsCount();
@@ -319,6 +329,28 @@ OutputPtr ConfigSerializer::deserializeOutput(const QDBusArgument &arg)
             output->setModes(modes);
         } else if (key == QLatin1String("overscan")) {
             output->setOverscan(value.toUInt());
+        } else if (key == QLatin1String("panning")) {
+            QDBusArgument panArg = value.value<QDBusArgument>();
+            int x = 0, y = 0, w = 0, h = 0;
+            panArg.beginMap();
+            while (!panArg.atEnd()) {
+                QString panKey;
+                QVariant panValue;
+                panArg.beginMapEntry();
+                panArg >> panKey >> panValue;
+                if (panKey == QLatin1Char('x')) {
+                    x = panValue.toInt();
+                } else if (panKey == QLatin1Char('y')) {
+                    y = panValue.toInt();
+                } else if (panKey == QLatin1String("width")) {
+                    w = panValue.toInt();
+                } else if (panKey == QLatin1String("height")) {
+                    h = panValue.toInt();
+                }
+                panArg.endMapEntry();
+            }
+            panArg.endMap();
+            output->setPanning(QRect(x, y, w, h));
         } else if (key == QLatin1String("vrrPolicy")) {
             output->setVrrPolicy(static_cast<Output::VrrPolicy>(value.toInt()));
         } else if (key == QLatin1String("rgbRange")) {
@@ -390,6 +422,8 @@ ScreenPtr ConfigSerializer::deserializeScreen(const QDBusArgument &arg)
             screen->setMaxActiveOutputsCount(value.toInt());
         } else if (key == QLatin1String("currentSize")) {
             screen->setCurrentSize(deserializeSize(value.value<QDBusArgument>()));
+        } else if (key == QLatin1String("explicitSize")) {
+            screen->setExplicitSize(deserializeSize(value.value<QDBusArgument>()));
         } else if (key == QLatin1String("maxSize")) {
             screen->setMaxSize(deserializeSize(value.value<QDBusArgument>()));
         } else if (key == QLatin1String("minSize")) {

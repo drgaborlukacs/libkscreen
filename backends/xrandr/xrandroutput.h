@@ -53,6 +53,7 @@ public:
 
     QPoint position() const;
     QSize size() const;
+    QRect panning() const;
     QSizeF logicalSize() const;
 
     QString currentModeId() const;

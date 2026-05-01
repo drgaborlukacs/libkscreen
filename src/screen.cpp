@@ -24,6 +24,7 @@ public:
         , currentSize(other.currentSize)
         , minSize(other.minSize)
         , maxSize(other.maxSize)
+        , explicitSize(other.explicitSize)
     {
     }
 
@@ -32,6 +33,7 @@ public:
     QSize currentSize;
     QSize minSize;
     QSize maxSize;
+    QSize explicitSize;
 };
 
 Screen::Screen()
@@ -102,6 +104,20 @@ void Screen::setMinSize(const QSize &minSize)
     d->minSize = minSize;
 }
 
+QSize Screen::explicitSize() const
+{
+    return d->explicitSize;
+}
+
+void Screen::setExplicitSize(const QSize &explicitSize)
+{
+    if (d->explicitSize == explicitSize) {
+        return;
+    }
+    d->explicitSize = explicitSize;
+    Q_EMIT explicitSizeChanged();
+}
+
 int Screen::maxActiveOutputsCount() const
 {
     return d->maxActiveOutputsCount;
@@ -117,6 +133,7 @@ void Screen::apply(const ScreenPtr &other)
     // Only set values that can change
     setMaxActiveOutputsCount(other->d->maxActiveOutputsCount);
     setCurrentSize(other->d->currentSize);
+    setExplicitSize(other->d->explicitSize);
 }
 
 #include "moc_screen.cpp"

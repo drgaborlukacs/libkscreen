@@ -18,6 +18,7 @@
 #include <QJsonObject>
 #include <QLoggingCategory>
 #include <QRect>
+#include <QRegularExpression>
 #include <QScreen>
 #include <QStandardPaths>
 
@@ -303,6 +304,19 @@ void Doctor::parseOutputArgs()
                         return;
                     }
                     setOverscan(output, overscan);
+                } else if (ops.count() == 4 && subcmd == QLatin1String("panning")) {
+                    QRect rect;
+                    if (ops[3] != QLatin1String("none")) {
+                        static const QRegularExpression re(QStringLiteral("^(\\d+)x(\\d+)(?:\\+(\\d+)\\+(\\d+))?$"));
+                        const QRegularExpressionMatch m = re.match(ops[3]);
+                        if (!m.hasMatch()) {
+                            qCWarning(KSCREEN_DOCTOR) << "Wrong input: panning expects WxH[+X+Y] or 'none'";
+                            qApp->exit(9);
+                            return;
+                        }
+                        rect = QRect(m.captured(3).toInt(), m.captured(4).toInt(), m.captured(1).toInt(), m.captured(2).toInt());
+                    }
+                    setPanning(output, rect);
                 } else if (ops.count() == 4 && subcmd == QLatin1String("vrrpolicy")) {
                     const QString _policy = ops[3].toLower();
                     KScreen::Output::VrrPolicy policy;
@@ -564,6 +578,25 @@ void Doctor::parseOutputArgs()
                         return;
                     }
                     m_changed = true;
+                } else {
+                    cerr << "Unable to parse arguments: " << op << Qt::endl;
+                    qApp->exit(2);
+                    return;
+                }
+            } else if (ops[0] == QLatin1String("screen")) {
+                if (ops.count() == 3 && ops[1] == QLatin1String("fbsize")) {
+                    QSize size;
+                    if (ops[2] != QLatin1String("none")) {
+                        static const QRegularExpression re(QStringLiteral("^(\\d+)x(\\d+)$"));
+                        const QRegularExpressionMatch m = re.match(ops[2]);
+                        if (!m.hasMatch()) {
+                            qCWarning(KSCREEN_DOCTOR) << "Wrong input: fbsize expects WxH or 'none'";
+                            qApp->exit(9);
+                            return;
+                        }
+                        size = QSize(m.captured(1).toInt(), m.captured(2).toInt());
+                    }
+                    setExplicitFbSize(size);
                 } else {
                     cerr << "Unable to parse arguments: " << op << Qt::endl;
                     qApp->exit(2);
@@ -910,6 +943,18 @@ void Doctor::setRotation(OutputPtr output, KScreen::Output::Rotation rot)
 void Doctor::setOverscan(OutputPtr output, uint32_t overscan)
 {
     output->setOverscan(overscan);
+    m_changed = true;
+}
+
+void Doctor::setPanning(OutputPtr output, const QRect &panning)
+{
+    output->setPanning(panning);
+    m_changed = true;
+}
+
+void Doctor::setExplicitFbSize(const QSize &size)
+{
+    m_config->screen()->setExplicitSize(size);
     m_changed = true;
 }
 

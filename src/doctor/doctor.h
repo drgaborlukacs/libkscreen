@@ -42,6 +42,8 @@ public:
     void setScale(OutputPtr output, qreal scale);
     void setRotation(OutputPtr output, KScreen::Output::Rotation rot);
     void setOverscan(OutputPtr output, uint32_t overscan);
+    void setPanning(OutputPtr output, const QRect &panning);
+    void setExplicitFbSize(const QSize &size);
     void setVrrPolicy(OutputPtr output, KScreen::Output::VrrPolicy policy);
     void setRgbRange(OutputPtr output, KScreen::Output::RgbRange rgbRange);
     void setPrimary(OutputPtr output);

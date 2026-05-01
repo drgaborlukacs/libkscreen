@@ -14,6 +14,7 @@
 #include <QMetaType>
 #include <QObject>
 #include <QPoint>
+#include <QRect>
 #include <QSize>
 #include <QStringList>
 #include <optional>
@@ -70,6 +71,7 @@ public:
     Q_PROPERTY(QSizeF explicitLogicalSize READ explicitLogicalSize WRITE setExplicitLogicalSize NOTIFY explicitLogicalSizeChanged)
     Q_PROPERTY(Capabilities capabilities READ capabilities NOTIFY capabilitiesChanged)
     Q_PROPERTY(uint32_t overscan READ overscan WRITE setOverscan NOTIFY overscanChanged)
+    Q_PROPERTY(QRect panning READ panning WRITE setPanning NOTIFY panningChanged)
     Q_PROPERTY(VrrPolicy vrrPolicy READ vrrPolicy WRITE setVrrPolicy NOTIFY vrrPolicyChanged)
     Q_PROPERTY(RgbRange rgbRange READ rgbRange WRITE setRgbRange NOTIFY rgbRangeChanged)
     Q_PROPERTY(bool hdrEnabled READ isHdrEnabled WRITE setHdrEnabled NOTIFY hdrEnabledChanged)
@@ -461,6 +463,9 @@ public:
      */
     void setOverscan(uint32_t overscan);
 
+    QRect panning() const;
+    void setPanning(const QRect &panning);
+
     /**
      * @returns when variable refresh rate should be used on this output
      *
@@ -628,6 +633,7 @@ Q_SIGNALS:
     void followPreferredModeChanged(bool followPreferredMode);
     void capabilitiesChanged();
     void overscanChanged();
+    void panningChanged();
     void vrrPolicyChanged();
     void rgbRangeChanged();
     void hdrEnabledChanged();
